@@ -71,19 +71,24 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200/90 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 p-3 lg:p-4 flex lg:flex-col justify-between overflow-x-auto lg:overflow-x-visible transition-colors">
-      <nav className="flex lg:flex-col gap-1.5 w-full" aria-label="Sidebar Navigation">
+    <aside className="w-full lg:w-64 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200/90 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 p-3 lg:p-4 flex lg:flex-col justify-between overflow-x-auto lg:overflow-x-visible transition-colors" aria-label="Campus Navigation">
+      <div role="tablist" aria-label="Campus Navigation Sections" className="flex lg:flex-col gap-1.5 w-full">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
+              role="tab"
+              id={`tab-${item.id}`}
+              aria-selected={isActive}
+              aria-controls={`tabpanel-${item.id}`}
+              tabIndex={isActive ? 0 : -1}
               onClick={() => setActiveTab(item.id)}
-              className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+              className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 ${
                 isActive
                   ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-transparent'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-transparent'
               }`}
               aria-current={isActive ? 'page' : undefined}
             >
@@ -92,6 +97,7 @@ export const Sidebar: React.FC = () => {
                   className={`h-4 w-4 shrink-0 ${
                     isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'
                   }`}
+                  aria-hidden="true"
                 />
                 <span>{item.label}</span>
               </div>
@@ -107,7 +113,7 @@ export const Sidebar: React.FC = () => {
             </button>
           );
         })}
-      </nav>
+      </div>
 
       {/* Operational Policy & Governance Card */}
       <div className="hidden lg:block mt-6 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">

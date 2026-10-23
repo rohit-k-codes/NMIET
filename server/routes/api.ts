@@ -98,15 +98,20 @@ apiRouter.post('/agent/optimize', agentLimiter, async (req: Request, res: Respon
     const { analytics, objective, tariff, locale } = parseResult.data;
 
     // Trigger bounded agent workflow
-    // @ts-expect-error type alignment
-    const plan = await runAgentOptimizationWorkflow(analytics, objective, tariff, locale);
+    const plan = await runAgentOptimizationWorkflow(
+      analytics as unknown as import('../../src/types/energy').DatasetAnalytics,
+      objective,
+      tariff,
+      locale
+    );
 
     res.json({
       success: true,
       data: plan,
     });
-  } catch (err: any) {
-    console.error('API Optimization Error:', err.message || err);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('API Optimization Error:', errorMsg);
     res.status(500).json({
       success: false,
       error: 'An internal error occurred while executing the AI agent. Safe fallback available.',
@@ -126,10 +131,13 @@ apiRouter.get('/demo-data', (_req: Request, res: Response) => {
       count: demoReadings.length,
       data: demoReadings,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('Demo data load failure:', errorMsg);
     res.status(500).json({ success: false, error: 'Could not load demo dataset' });
   }
 });
+
 
 /**
  * CSV template download endpoint

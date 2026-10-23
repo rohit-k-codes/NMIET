@@ -57,13 +57,14 @@ app.use('/api/*', (_req: Request, res: Response) => {
 });
 
 // 6. Safe Global Error Handler (never leaks stack traces or credentials)
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('[WattWise API Error]', err.name || 'Error', err.message || err);
+app.use((err: Error & { status?: number }, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('[WattWise API Error]', err.name || 'Error', err.message);
   res.status(err.status || 500).json({
     success: false,
     error: err.message && !err.message.includes('C:\\') ? err.message : 'Internal Server Error',
   });
 });
+
 
 // Start listening if run directly
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {

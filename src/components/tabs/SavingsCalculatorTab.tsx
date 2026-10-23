@@ -57,26 +57,32 @@ export const SavingsCalculatorTab: React.FC = () => {
           {/* Control 1: Reduction Percentage */}
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-700 dark:text-slate-200">
+              <label htmlFor="reduction-slider" className="font-semibold text-slate-700 dark:text-slate-200">
                 {t('calc_target_reduction')}
-              </span>
+              </label>
               <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">
                 {formatPercentNum(savingsScenario.targetReductionPct, 0)}
               </span>
             </div>
             <input
+              id="reduction-slider"
               type="range"
               min="1"
               max="100"
               step="1"
               value={savingsScenario.targetReductionPct}
+              aria-label={t('calc_target_reduction')}
+              aria-valuemin={1}
+              aria-valuemax={100}
+              aria-valuenow={savingsScenario.targetReductionPct}
+              aria-valuetext={`${savingsScenario.targetReductionPct}%`}
               onChange={(e) =>
                 setSavingsScenario((prev) => ({
                   ...prev,
                   targetReductionPct: Number(e.target.value),
                 }))
               }
-              className="w-full accent-amber-500 cursor-pointer"
+              className="w-full accent-amber-500 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             />
             <div className="flex flex-wrap gap-1.5 pt-1">
               {presetReductions.map((p) => (
@@ -88,17 +94,17 @@ export const SavingsCalculatorTab: React.FC = () => {
                       targetReductionPct: p.value,
                     }))
                   }
-                  className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                  className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
                     savingsScenario.targetReductionPct === p.value
                       ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40'
-                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-800'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-800'
                   }`}
                 >
                   {p.label}
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-[10px] text-slate-600 dark:text-slate-400">
               Target portion of identified waste remediated through scheduling or setpoint fixes.
             </p>
           </div>
@@ -106,51 +112,59 @@ export const SavingsCalculatorTab: React.FC = () => {
           {/* Control 2: Electricity Tariff */}
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-700 dark:text-slate-200">
+              <label htmlFor="tariff-slider" className="font-semibold text-slate-700 dark:text-slate-200">
                 {t('calc_tariff_rate')}
-              </span>
+              </label>
               <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
                 {formatMoney(savingsScenario.electricityTariff, 2)}/kWh
               </span>
             </div>
             <input
+              id="tariff-slider"
               type="range"
               min="0.05"
               max="0.60"
               step="0.01"
               value={savingsScenario.electricityTariff}
+              aria-label={t('calc_tariff_rate')}
+              aria-valuemin={0.05}
+              aria-valuemax={0.60}
+              aria-valuenow={savingsScenario.electricityTariff}
+              aria-valuetext={`$${savingsScenario.electricityTariff}/kWh`}
               onChange={(e) =>
                 setSavingsScenario((prev) => ({
                   ...prev,
                   electricityTariff: Number(e.target.value),
                 }))
               }
-              className="w-full accent-emerald-500 cursor-pointer"
+              className="w-full accent-emerald-500 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             />
-            <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+            <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 font-mono">
               <span>$0.05</span>
               <span>$0.30</span>
               <span>$0.60</span>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-[10px] text-slate-600 dark:text-slate-400">
               Campus blended utility rate per kilowatt-hour including capacity charges.
             </p>
           </div>
 
           {/* Control 3: Facility Scope */}
           <div className="space-y-3">
-            <span className="font-semibold text-xs text-slate-700 dark:text-slate-200 block">
+            <label htmlFor="target-facility-select" className="font-semibold text-xs text-slate-700 dark:text-slate-200 block">
               {t('calc_target_facility')}
-            </span>
+            </label>
             <select
+              id="target-facility-select"
               value={savingsScenario.targetZone || 'all'}
+              aria-label={t('calc_target_facility')}
               onChange={(e) =>
                 setSavingsScenario((prev) => ({
                   ...prev,
                   targetZone: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <option value="all">{t('calc_all_facilities')}</option>
               {analytics.zones.map((zone) => (
@@ -159,7 +173,7 @@ export const SavingsCalculatorTab: React.FC = () => {
                 </option>
               ))}
             </select>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-[10px] text-slate-600 dark:text-slate-400">
               Scope calculation to the entire campus or target a single high-priority facility.
             </p>
           </div>

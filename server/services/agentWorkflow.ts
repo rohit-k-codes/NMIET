@@ -20,6 +20,20 @@ const FinalAgentResponseSchema = z.object({
 const MAX_AGENT_TURNS = 4;
 const TIMEOUT_MS = 25000;
 
+interface GeminiFunctionCall {
+  name?: string;
+  args?: Record<string, unknown>;
+}
+
+interface GeminiPart {
+  text?: string;
+  functionCall?: GeminiFunctionCall;
+  functionResponse?: {
+    name: string;
+    response: Record<string, unknown>;
+  };
+}
+
 /**
  * Executes genuine bounded agentic workflow with Gemini 3.8 Flash and allowlisted tools
  */
@@ -135,17 +149,18 @@ Examine the findings using your tools, calculate the savings scenario, and draft
         contents.push(candidate.content);
 
         // Check for function calls in response parts
-        const functionCalls = candidate.content.parts?.filter((p: any) => p.functionCall);
+        const parts = (candidate.content.parts || []) as GeminiPart[];
+        const functionCalls = parts.filter((p) => p.functionCall);
 
         if (!functionCalls || functionCalls.length === 0) {
           // Model finished tool loop and provided final synthesis
-          const textParts = candidate.content.parts?.filter((p: any) => p.text).map((p: any) => p.text) || [];
+          const textParts = parts.filter((p) => p.text).map((p) => p.text as string);
           finalSummary = textParts.join('\n');
           break;
         }
 
         // Execute function calls boundedly
-        const functionResponseParts: any[] = [];
+        const functionResponseParts: GeminiPart[] = [];
 
         for (const part of functionCalls) {
           const fc = part.functionCall;
@@ -179,9 +194,10 @@ Examine the findings using your tools, calculate the savings scenario, and draft
           functionResponseParts.push({
             functionResponse: {
               name: toolName,
-              response: execRes.success ? execRes.result : { error: execRes.error },
+              response: (execRes.success && execRes.result) ? execRes.result : { error: execRes.error || 'Unknown tool failure' },
             },
           });
+
         }
 
         // Feed function execution results back to Gemini for the next turn
@@ -248,17 +264,19 @@ Examine the findings using your tools, calculate the savings scenario, and draft
     );
 
     return await Promise.race([workflowPromise, timeoutPromise]);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     // If Gemini fails, times out, or reports auth error, return deterministic fallback
-    console.warn('Gemini live agent error, engaging deterministic fallback:', err.message || err);
+    console.warn('Gemini live agent error, engaging deterministic fallback:', errorMsg);
 
     const fallbackPlan = await generateDeterministicOptimizationPlan(analytics, objective, tariff, locale);
     fallbackPlan.executionLogs.unshift({
       id: `log-${Date.now()}-err`,
       timestamp: new Date().toISOString(),
       type: 'system',
-      content: `Notice: Live Gemini API call diverted to deterministic fallback (${err.message || 'Network / Auth Boundary'}). Full analytical precision maintained.`,
+      content: `Notice: Live Gemini API call diverted to deterministic fallback (${errorMsg || 'Network / Auth Boundary'}). Full analytical precision maintained.`,
     });
     return fallbackPlan;
   }
 }
+

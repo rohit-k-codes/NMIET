@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import {
   EnergyReading,
   DatasetAnalytics,
@@ -23,6 +23,7 @@ import {
   formatDateTime,
   formatTime,
 } from '../i18n/formatters';
+import { generateDeterministicOptimizationPlan } from '../../server/services/fallbackAgent';
 
 export type TabType =
   | 'overview'
@@ -57,6 +58,10 @@ interface AppContextType {
   formatPercentNum: (val: number, dec?: number) => string;
   formatDateStr: (date: string | number | Date) => string;
   formatTimeStr: (date: string | number | Date) => string;
+
+  // Accessibility Announcements
+  announcement: string;
+  announce: (message: string) => void;
 
   // Data & Analytics State
   readings: EnergyReading[];
@@ -99,6 +104,12 @@ const LANG_STORAGE_KEY = 'wattwise_language';
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
+  // Accessibility live region state
+  const [announcement, setAnnouncement] = useState<string>('');
+  const announce = useCallback((msg: string) => {
+    setAnnouncement(msg);
+  }, []);
+
   // Theme setup: initialize from localStorage or system default
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => {
     try {
@@ -106,7 +117,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (saved === 'dark' || saved === 'light' || saved === 'system') {
         return saved;
       }
-    } catch {}
+    } catch {
+      // Ignore localStorage access failures
+    }
     return 'system';
   });
 
@@ -141,17 +154,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [themeMode]);
 
-  const setThemeMode = (mode: ThemeMode) => {
+  const setThemeMode = useCallback((mode: ThemeMode) => {
     setThemeModeState(mode);
     try {
       localStorage.setItem(THEME_STORAGE_KEY, mode);
-    } catch {}
-  };
+    } catch {
+      // Ignore storage errors
+    }
+    announce(`Theme switched to ${mode}.`);
+  }, [announce]);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const nextMode: ThemeMode = resolvedTheme === 'dark' ? 'light' : 'dark';
     setThemeMode(nextMode);
-  };
+  }, [resolvedTheme, setThemeMode]);
 
   // Language setup: initialize from localStorage or default 'en'
   const [language, setLanguageState] = useState<Language>(() => {
@@ -160,19 +176,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (saved === 'en' || saved === 'hi' || saved === 'mr') {
         return saved;
       }
-    } catch {}
+    } catch {
+      // Ignore localStorage access failures
+    }
     return 'en';
   });
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     try {
       localStorage.setItem(LANG_STORAGE_KEY, lang);
-    } catch {}
-  };
+    } catch {
+      // Ignore storage errors
+    }
+    const label = lang === 'hi' ? 'हिन्दी' : lang === 'mr' ? 'मराठी' : 'English';
+    announce(`Language set to ${label}.`);
+  }, [announce]);
 
   // Translation helper
-  const t = (key: TranslationKey, vars?: Record<string, string | number>): string => {
+  const t = useCallback((key: TranslationKey, vars?: Record<string, string | number>): string => {
     const langDict = translations[language] || translations.en;
     let text = langDict[key] || translations.en[key] || key;
     if (vars) {
@@ -181,15 +203,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
     }
     return text;
-  };
+  }, [language]);
 
   // Formatting helpers
-  const formatNum = (val: number, minDec = 0, maxDec = 2) => formatNumber(val, language, minDec, maxDec);
-  const formatKwhNum = (val: number, dec = 1) => formatKwh(val, language, dec);
-  const formatMoney = (val: number, dec = 2) => formatCurrency(val, language, dec);
-  const formatPercentNum = (val: number, dec = 0) => formatPercent(val, language, dec);
-  const formatDateStr = (date: string | number | Date) => formatDateTime(date, language);
-  const formatTimeStr = (date: string | number | Date) => formatTime(date, language);
+  const formatNum = useCallback(
+    (val: number, minDec = 0, maxDec = 2) => formatNumber(val, language, minDec, maxDec),
+    [language]
+  );
+  const formatKwhNum = useCallback(
+    (val: number, dec = 1) => formatKwh(val, language, dec),
+    [language]
+  );
+  const formatMoney = useCallback(
+    (val: number, dec = 2) => formatCurrency(val, language, dec),
+    [language]
+  );
+  const formatPercentNum = useCallback(
+    (val: number, dec = 0) => formatPercent(val, language, dec),
+    [language]
+  );
+  const formatDateStr = useCallback(
+    (date: string | number | Date) => formatDateTime(date, language),
+    [language]
+  );
+  const formatTimeStr = useCallback(
+    (date: string | number | Date) => formatTime(date, language),
+    [language]
+  );
 
   // In-memory data states (strictly zero database persistence)
   const [readings, setReadings] = useState<EnergyReading[]>([]);
@@ -224,9 +264,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [sessionAudit, setSessionAudit] = useState<SessionAuditEntry[]>([]);
 
-  const logAuditEvent = (type: SessionAuditEntry['type'], description: string, details?: Record<string, unknown>) => {
+  const logAuditEvent = useCallback((type: SessionAuditEntry['type'], description: string, details?: Record<string, unknown>) => {
     const entry: SessionAuditEntry = {
-      id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       timestamp: new Date().toISOString(),
       type,
       description,
@@ -237,7 +277,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...prev,
       sessionAuditCount: prev.sessionAuditCount + 1,
     }));
-  };
+  }, []);
 
   // Fetch backend health status on mount
   useEffect(() => {
@@ -256,7 +296,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   // Built-in Demo Data Loader
-  const loadDemoData = () => {
+  const loadDemoData = useCallback(() => {
     setIsAnalyzing(true);
     try {
       const demoReadings = generateDemoCampusReadings();
@@ -281,13 +321,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         totalKwh: demoAnalytics.totalKwh,
         anomaliesCount: demoAnalytics.anomalies.length,
       });
+
+      announce('Loaded 7-day realistic campus demo dataset with 840 observations.');
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [announce, logAuditEvent]);
 
   // Clear current session data completely
-  const clearSessionData = () => {
+  const clearSessionData = useCallback(() => {
     setReadings([]);
     setAnalytics(null);
     setIsDemoData(false);
@@ -296,15 +338,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCsvValidationErrors([]);
     setCsvWarnings([]);
     logAuditEvent('DATA_IMPORT', 'Cleared current session telemetry and action tasks from memory.');
-  };
+    announce('Cleared session telemetry and action tasks from volatile memory.');
+  }, [announce, logAuditEvent]);
 
   // Auto-load demo dataset on mount
   useEffect(() => {
     loadDemoData();
-  }, []);
+  }, [loadDemoData]);
 
   // Handle User CSV Upload
-  const handleCsvUpload = (csvText: string, filename: string): boolean => {
+  const handleCsvUpload = useCallback((csvText: string, filename: string): boolean => {
     setIsAnalyzing(true);
     setCsvValidationErrors([]);
     setCsvWarnings([]);
@@ -322,6 +365,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         logAuditEvent('DATA_IMPORT', `CSV validation failed for "${filename}" with ${parsed.errors.length} errors.`, {
           errors: parsed.errors.slice(0, 5),
         });
+        announce(`CSV validation failed with ${parsed.errors.length} errors.`);
         return false;
       }
 
@@ -347,23 +391,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         anomalies: calculatedAnalytics.anomalies.length,
       });
 
+      announce(`Successfully imported CSV with ${parsed.readings.length} readings across ${calculatedAnalytics.zones.length} facilities.`);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       setCsvValidationErrors([
         {
           row: 0,
           field: 'runtime',
-          message: err.message || 'An error occurred during dataset computation.',
+          message: errMsg || 'An error occurred during dataset computation.',
         },
       ]);
+      announce(`Error parsing dataset: ${errMsg}`);
       return false;
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [announce, logAuditEvent]);
 
-  // Run AI Optimization Agent with locale support
-  const runAiOptimizer = async (objective: string = 'Maximize Energy Conservation') => {
+  // Run AI Optimization Agent with locale support and resilient client fallback
+  const runAiOptimizer = useCallback(async (objective: string = 'Maximize Energy Conservation') => {
     if (!analytics) return;
     setIsOptimizing(true);
     const startMs = performance.now();
@@ -417,17 +464,39 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         modelUsed: plan.modelUsed,
       });
 
+      announce(`Agent optimization plan generated with ${plan.actions.length} action recommendations.`);
       setActiveTab('ai-agent');
-    } catch (err: any) {
-      console.error('Agent optimizer invocation failed:', err);
-      logAuditEvent('AGENT_INVOCATION', `Agent run encountered error: ${err.message}. Engaging client-side deterministic fallback.`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.warn('Backend agent request failed, executing client-side deterministic fallback engine:', errMsg);
+
+      // Execute client-side deterministic fallback so optimization never stalls
+      const fallbackPlan = await generateDeterministicOptimizationPlan(
+        analytics,
+        objective,
+        savingsScenario.electricityTariff,
+        language
+      );
+
+      setOptimizationPlan(fallbackPlan);
+      setActionTasks(fallbackPlan.actions);
+
+      setDiagnostics((prev) => ({
+        ...prev,
+        isFallbackMode: true,
+        lastRunTimestamp: new Date().toISOString(),
+      }));
+
+      logAuditEvent('AGENT_INVOCATION', `Engaged deterministic fallback plan (${fallbackPlan.actions.length} actions generated).`);
+      announce(`Generated deterministic fallback plan with ${fallbackPlan.actions.length} actionable recommendations.`);
+      setActiveTab('ai-agent');
     } finally {
       setIsOptimizing(false);
     }
-  };
+  }, [analytics, announce, language, logAuditEvent, savingsScenario.electricityTariff]);
 
   // Approve Action Task (Human-in-the-Loop)
-  const approveAction = (taskId: string, note?: string) => {
+  const approveAction = useCallback((taskId: string, note?: string) => {
     setActionTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -446,10 +515,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       zone: task?.zone,
       estimatedKwhSavings: task?.estimatedKwhReduction,
     });
-  };
+    announce(`Action task ${task?.title || taskId} approved.`);
+  }, [actionTasks, announce, logAuditEvent]);
 
   // Dismiss Action Task
-  const dismissAction = (taskId: string, note?: string) => {
+  const dismissAction = useCallback((taskId: string, note?: string) => {
     setActionTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -467,7 +537,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       title: task?.title,
       zone: task?.zone,
     });
-  };
+    announce(`Action task ${task?.title || taskId} dismissed.`);
+  }, [actionTasks, announce, logAuditEvent]);
 
   // Recalculate savings scenario dynamically when inputs change
   const savingsResult = useMemo(() => {
@@ -476,7 +547,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [analytics, savingsScenario]);
 
   // Export Full JSON Report
-  const exportReportJson = () => {
+  const exportReportJson = useCallback(() => {
     if (!analytics) return;
     const reportData = {
       reportTitle: 'WattWise AI - Campus Energy Optimization Report',
@@ -509,10 +580,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     URL.revokeObjectURL(url);
 
     logAuditEvent('REPORT_EXPORTED', 'Exported comprehensive JSON energy optimization report.');
-  };
+    announce('Comprehensive energy optimization JSON report exported.');
+  }, [actionTasks, analytics, announce, isDemoData, language, logAuditEvent, optimizationPlan, savingsResult, savingsScenario, sessionAudit]);
 
   // Export Findings CSV with formula injection sanitization
-  const exportFindingsCsv = () => {
+  const exportFindingsCsv = useCallback(() => {
     if (!analytics) return;
     const headers = ['Anomaly ID', 'Zone', 'Site', 'Timestamp', 'Measured kWh', 'Baseline kWh', 'Excess kWh', 'Deviation %', 'Rule', 'Severity', 'Explanation'];
     const rows = analytics.anomalies.map((a) => [
@@ -539,10 +611,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     URL.revokeObjectURL(url);
 
     logAuditEvent('REPORT_EXPORTED', 'Exported detected anomaly findings CSV.');
-  };
+    announce('Anomaly findings CSV exported.');
+  }, [analytics, announce, logAuditEvent]);
 
   // Export Action Tasks CSV
-  const exportActionsCsv = () => {
+  const exportActionsCsv = useCallback(() => {
     if (actionTasks.length === 0) return;
     const headers = ['Task ID', 'Title', 'Zone', 'Urgency', 'Category', 'Status', 'Implementation Effort', 'Confidence', 'Est kWh Saved', 'Est $ Saved', 'Rationale', 'Created At', 'Reviewed At', 'Review Note'];
     const rows = actionTasks.map((t) => [
@@ -572,55 +645,98 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     URL.revokeObjectURL(url);
 
     logAuditEvent('REPORT_EXPORTED', 'Exported human-in-the-loop action tasks CSV.');
-  };
+    announce('Action intervention plan CSV exported.');
+  }, [actionTasks, announce, logAuditEvent]);
 
-  return (
-    <AppContext.Provider
-      value={{
-        activeTab,
-        setActiveTab,
-        themeMode,
-        setThemeMode,
-        theme: resolvedTheme,
-        toggleTheme,
-        language,
-        setLanguage,
-        t,
-        formatNum,
-        formatKwhNum,
-        formatMoney,
-        formatPercentNum,
-        formatDateStr,
-        formatTimeStr,
-        readings,
-        analytics,
-        isDemoData,
-        csvValidationErrors,
-        csvWarnings,
-        optimizationPlan,
-        actionTasks,
-        savingsScenario,
-        setSavingsScenario,
-        savingsResult,
-        diagnostics,
-        sessionAudit,
-        isAnalyzing,
-        isOptimizing,
-        apiHealth,
-        loadDemoData,
-        clearSessionData,
-        handleCsvUpload,
-        runAiOptimizer,
-        approveAction,
-        dismissAction,
-        exportReportJson,
-        exportFindingsCsv,
-        exportActionsCsv,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+  // Memoized context value to prevent unneeded consumer re-renders
+  const contextValue = useMemo<AppContextType>(
+    () => ({
+      activeTab,
+      setActiveTab,
+      themeMode,
+      setThemeMode,
+      theme: resolvedTheme,
+      toggleTheme,
+      language,
+      setLanguage,
+      t,
+      formatNum,
+      formatKwhNum,
+      formatMoney,
+      formatPercentNum,
+      formatDateStr,
+      formatTimeStr,
+      announcement,
+      announce,
+      readings,
+      analytics,
+      isDemoData,
+      csvValidationErrors,
+      csvWarnings,
+      optimizationPlan,
+      actionTasks,
+      savingsScenario,
+      setSavingsScenario,
+      savingsResult,
+      diagnostics,
+      sessionAudit,
+      isAnalyzing,
+      isOptimizing,
+      apiHealth,
+      loadDemoData,
+      clearSessionData,
+      handleCsvUpload,
+      runAiOptimizer,
+      approveAction,
+      dismissAction,
+      exportReportJson,
+      exportFindingsCsv,
+      exportActionsCsv,
+    }),
+    [
+      activeTab,
+      themeMode,
+      setThemeMode,
+      resolvedTheme,
+      toggleTheme,
+      language,
+      setLanguage,
+      t,
+      formatNum,
+      formatKwhNum,
+      formatMoney,
+      formatPercentNum,
+      formatDateStr,
+      formatTimeStr,
+      announcement,
+      announce,
+      readings,
+      analytics,
+      isDemoData,
+      csvValidationErrors,
+      csvWarnings,
+      optimizationPlan,
+      actionTasks,
+      savingsScenario,
+      savingsResult,
+      diagnostics,
+      sessionAudit,
+      isAnalyzing,
+      isOptimizing,
+      apiHealth,
+      loadDemoData,
+      clearSessionData,
+      handleCsvUpload,
+      runAiOptimizer,
+      approveAction,
+      dismissAction,
+      exportReportJson,
+      exportFindingsCsv,
+      exportActionsCsv,
+    ]
   );
+
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };
 
 export const useApp = () => {

@@ -198,6 +198,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     footer_tagline: 'Intelligent Campus Energy Analytics & Optimization Platform',
     footer_security_badge: 'Zero-Database In-Memory Session',
     footer_governance_badge: 'Human-in-the-Loop Governance',
+
+    // Accessibility & WCAG Enhancements
+    skip_to_content: 'Skip to main content',
+    chart_accessible_summary_title: 'Accessible Data Table Summary',
   },
 
   hi: {
@@ -397,6 +401,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     footer_tagline: 'बुद्धिमान परिसर ऊर्जा विश्लेषण और अनुकूलन मंच',
     footer_security_badge: 'शून्य-डेटाबेस इन-मेमोरी सत्र',
     footer_governance_badge: 'मानव-समीक्षा शासन प्रणाली',
+
+    // Accessibility & WCAG Enhancements
+    skip_to_content: 'मुख्य सामग्री पर जाएं',
+    chart_accessible_summary_title: 'सुगम्य डेटा तालिका सारांश',
   },
 
   mr: {
@@ -596,5 +604,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     footer_tagline: 'बुद्धिमान परिसर ऊर्जा विश्लेषण आणि ऑप्टिमायझेशन प्लॅटफॉर्म',
     footer_security_badge: 'शून्य-डेटाबेस इन-मेमरी सत्र',
     footer_governance_badge: 'मानवी पुनरावलोकन प्रशासन हमी',
+
+    // Accessibility & WCAG Enhancements
+    skip_to_content: 'मुख्य सामग्रीवर जा',
+    chart_accessible_summary_title: 'सुलभ डेटा सारणी सारांश',
   },
 };
+

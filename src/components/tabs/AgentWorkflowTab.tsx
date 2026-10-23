@@ -20,6 +20,7 @@ import {
   FileCheck2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { TranslationKey } from '../../i18n/types';
 
 export const AgentWorkflowTab: React.FC = () => {
   const {
@@ -43,7 +44,7 @@ export const AgentWorkflowTab: React.FC = () => {
   const [customObjective, setCustomObjective] = useState<string>('');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-  const objectiveOptions = [
+  const objectiveOptions: { key: TranslationKey; value: string }[] = [
     { key: 'agent_obj_max_conservation', value: 'Maximize Energy Conservation' },
     { key: 'agent_obj_offhours_waste', value: 'Deep Off-Hours Waste Elimination' },
     { key: 'agent_obj_peak_shaving', value: 'Peak Demand Shaving & Equipment Surge' },
@@ -145,18 +146,20 @@ export const AgentWorkflowTab: React.FC = () => {
                       : 'bg-white/60 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/40'
                   }`}
                 >
-                  {t(obj.key as any)}
+                  {t(obj.key)}
                 </button>
               ))}
             </div>
 
             {/* Custom Objective Option */}
             <input
+              id="agent-custom-objective"
               type="text"
+              aria-label={t('agent_custom_objective_placeholder')}
               placeholder={t('agent_custom_objective_placeholder')}
               value={customObjective}
               onChange={(e) => setCustomObjective(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-400 mt-2"
+              className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 mt-2"
             />
           </div>
 
@@ -172,19 +175,28 @@ export const AgentWorkflowTab: React.FC = () => {
               </span>
             </div>
 
+            <label htmlFor="agent-tariff-slider" className="sr-only">
+              {t('agent_tariff_label')}
+            </label>
             <input
+              id="agent-tariff-slider"
               type="range"
               min="0.05"
               max="0.60"
               step="0.01"
               value={savingsScenario.electricityTariff}
+              aria-label={t('agent_tariff_label')}
+              aria-valuemin={0.05}
+              aria-valuemax={0.60}
+              aria-valuenow={savingsScenario.electricityTariff}
+              aria-valuetext={`$${savingsScenario.electricityTariff}/kWh`}
               onChange={(e) =>
                 setSavingsScenario((prev) => ({
                   ...prev,
                   electricityTariff: Number(e.target.value),
                 }))
               }
-              className="w-full accent-emerald-500 cursor-pointer"
+              className="w-full accent-emerald-500 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             />
 
             <div className="flex justify-between text-[10px] text-slate-400 font-mono">

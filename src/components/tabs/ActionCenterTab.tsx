@@ -16,6 +16,11 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ActionStatus, ActionUrgency, ActionCategory } from '../../types/energy';
+import {
+  ActionFilter,
+  getActionFilterTranslationKey,
+  getActionStatusTranslationKey,
+} from '../../i18n/types';
 
 export const ActionCenterTab: React.FC = () => {
   const {
@@ -160,13 +165,13 @@ export const ActionCenterTab: React.FC = () => {
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
               statusFilter === status
                 ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            {t(`action_filter_${status}` as any)}
+            {t(getActionFilterTranslationKey(status))}
           </button>
         ))}
       </div>
@@ -226,7 +231,7 @@ export const ActionCenterTab: React.FC = () => {
                           : 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
                       }`}
                     >
-                      {t(`action_status_${task.status}` as any)}
+                      {t(getActionStatusTranslationKey(task.status))}
                     </span>
                   </div>
                 </div>
@@ -287,12 +292,13 @@ export const ActionCenterTab: React.FC = () => {
                   <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
                     <input
                       type="text"
+                      aria-label={t('action_review_note_placeholder')}
                       placeholder={t('action_review_note_placeholder')}
                       value={reviewNotes[task.id] || ''}
                       onChange={(e) =>
                         setReviewNotes((prev) => ({ ...prev, [task.id]: e.target.value }))
                       }
-                      className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                      className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                     />
 
                     <div className="flex items-center gap-2.5">

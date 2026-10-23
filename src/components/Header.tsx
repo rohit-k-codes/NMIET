@@ -15,7 +15,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useApp, ThemeMode } from '../context/AppContext';
-import { Language } from '../i18n/types';
+import { Language, getThemeModeTranslationKey } from '../i18n/types';
 import { ConfirmationModal } from './ConfirmationModal';
 
 export const Header: React.FC = () => {
@@ -49,7 +49,7 @@ export const Header: React.FC = () => {
   const langMenuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns on outside click
+    // Close dropdowns on outside click or Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
@@ -62,8 +62,21 @@ export const Header: React.FC = () => {
         setShowThemeMenu(false);
       }
     };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowExportMenu(false);
+        setShowLangMenu(false);
+        setShowThemeMenu(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const languageLabels: Record<Language, { label: string; short: string }> = {
@@ -73,7 +86,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/90 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/85 backdrop-blur-md px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 transition-colors">
+    <header role="banner" className="sticky top-0 z-40 w-full border-b border-slate-200/90 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/85 backdrop-blur-md px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 transition-colors">
       {/* Brand & Tagline */}
       <div className="flex items-center gap-3.5">
         <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20 flex items-center justify-center shrink-0">
@@ -215,7 +228,7 @@ export const Header: React.FC = () => {
                   ) : (
                     <Monitor className="h-3.5 w-3.5" />
                   )}
-                  <span className="capitalize">{t(`theme_${mode}` as any)}</span>
+                  <span className="capitalize">{t(getThemeModeTranslationKey(mode))}</span>
                 </button>
               ))}
             </div>

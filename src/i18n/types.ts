@@ -196,4 +196,18 @@ export type TranslationKey =
   // Footer
   | 'footer_tagline'
   | 'footer_security_badge'
-  | 'footer_governance_badge';
+  | 'footer_governance_badge'
+
+  // Accessibility & WCAG Enhancements
+  | 'skip_to_content'
+  | 'chart_accessible_summary_title';
+
+export type SeverityLevel = 'high' | 'medium' | 'low';
+export type ActionStatus = 'pending' | 'approved' | 'dismissed';
+export type ActionFilter = 'all' | ActionStatus;
+
+export const getSeverityTranslationKey = (sev: SeverityLevel): TranslationKey => `severity_${sev}` as TranslationKey;
+export const getActionStatusTranslationKey = (status: ActionStatus): TranslationKey => `action_status_${status}` as TranslationKey;
+export const getActionFilterTranslationKey = (filter: ActionFilter): TranslationKey => `action_filter_${filter}` as TranslationKey;
+export const getThemeModeTranslationKey = (mode: 'light' | 'dark' | 'system'): TranslationKey => `theme_${mode}` as TranslationKey;
+

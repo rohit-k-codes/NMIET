@@ -124,4 +124,26 @@ describe('Security & Tool Sandboxing Suite', () => {
     expect(plan.executionLogs.length).toBeGreaterThan(0);
     expect(plan.overallConfidence).toBeGreaterThanOrEqual(0.9);
   });
+
+  it('rejects invalid or out-of-range tool parameter payloads', async () => {
+    const draftTasks: ActionTask[] = [];
+    const res = await executeTool(
+      'calculate_savings_scenario',
+      { target_reduction_pct: 150, electricity_tariff: -0.5 }, // invalid: >100% and negative tariff
+      analytics,
+      draftTasks
+    );
+
+    expect(res.success).toBe(false);
+    expect(res.error).toContain('Parameter validation failure');
+  });
+
+  it('safely handles non-object or null raw tool arguments', async () => {
+    const draftTasks: ActionTask[] = [];
+    const res = await executeTool('inspect_energy_data', null, analytics, draftTasks);
+
+    expect(res.success).toBe(false);
+    expect(res.error).toBeDefined();
+  });
 });
+

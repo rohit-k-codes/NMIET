@@ -245,28 +245,30 @@ export const DataImportTab: React.FC = () => {
             <div className="flex items-center gap-2 flex-wrap">
               {/* Search */}
               <div className="relative">
-                <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2.5" aria-hidden="true" />
                 <input
                   type="text"
+                  aria-label="Search telemetry by zone or timestamp"
                   placeholder="Search zone or timestamp..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 />
               </div>
 
               {/* Zone Filter */}
               {analytics && (
                 <select
+                  aria-label="Filter telemetry by facility"
                   value={selectedZoneFilter}
                   onChange={(e) => {
                     setSelectedZoneFilter(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="px-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                  className="px-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 >
                   <option value="all">All Facilities ({analytics.zones.length})</option>
                   {analytics.zones.map((z) => (
@@ -280,14 +282,14 @@ export const DataImportTab: React.FC = () => {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] tracking-wider">
+            <table className="w-full text-left text-xs" aria-label="Imported Campus Energy Telemetry Table">
+              <thead className="bg-slate-50 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] tracking-wider font-semibold">
                 <tr>
-                  <th className="px-4 py-3">Timestamp</th>
-                  <th className="px-4 py-3">Zone / Building</th>
-                  <th className="px-4 py-3">Campus Site</th>
-                  <th className="px-4 py-3">Measured kWh</th>
-                  <th className="px-4 py-3">Occupancy</th>
+                  <th scope="col" className="px-4 py-3">Timestamp</th>
+                  <th scope="col" className="px-4 py-3">Zone / Building</th>
+                  <th scope="col" className="px-4 py-3">Campus Site</th>
+                  <th scope="col" className="px-4 py-3">Measured kWh</th>
+                  <th scope="col" className="px-4 py-3">Occupancy</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-700 dark:text-slate-300 font-mono">

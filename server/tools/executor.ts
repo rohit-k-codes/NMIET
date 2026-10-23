@@ -152,11 +152,13 @@ export async function executeTool(
           error: `Security Policy Violation: Tool "${toolName}" is not in the allowlist. Only approved tools may be executed.`,
         };
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     return {
       success: false,
       toolName,
-      error: `Parameter validation failure: ${err.message || String(err)}`,
+      error: `Parameter validation failure: ${errorMsg}`,
     };
   }
 }
+

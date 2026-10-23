@@ -33,45 +33,47 @@ describe('Frontend Integration Suite', () => {
     expect(screen.getByText('Detect Waste. Decide Smartly. Save Energy.')).toBeInTheDocument();
   });
 
-  it('renders sidebar navigation tabs', async () => {
+  it('renders sidebar navigation tabs with accessible tab roles', async () => {
     render(<App />);
 
-    expect(screen.getByRole('button', { name: /overview dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /data import & csv/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /analytics & findings/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /ai optimization agent/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^action center$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /savings calculator/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /settings & preferences/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /overview dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /data import & csv/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /analytics & findings/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /ai optimization agent/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^action center/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /savings calculator/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /settings & preferences/i })).toBeInTheDocument();
   });
 
   it('allows switching tabs via sidebar', async () => {
     render(<App />);
 
     // Click on Savings Calculator tab
-    const calcTab = screen.getByRole('button', { name: /savings calculator/i });
+    const calcTab = screen.getByRole('tab', { name: /savings calculator/i });
     fireEvent.click(calcTab);
 
     await waitFor(() => {
       expect(screen.getByText('Campus Savings Scenario Calculator')).toBeInTheDocument();
-    });
+    }, { timeout: 4000 });
 
     // Click on Action Center tab
-    const actionCenterTab = screen.getByRole('button', { name: /action center/i });
+    const actionCenterTab = screen.getByRole('tab', { name: /action center/i });
     fireEvent.click(actionCenterTab);
 
     await waitFor(() => {
       expect(screen.getByText('Human-in-the-Loop Governance Guarantee')).toBeInTheDocument();
-    });
+    }, { timeout: 4000 });
 
     // Click on Settings tab
-    const settingsTab = screen.getByRole('button', { name: /settings & preferences/i });
+    const settingsTab = screen.getByRole('tab', { name: /settings & preferences/i });
     fireEvent.click(settingsTab);
 
     await waitFor(() => {
       expect(screen.getByText('Appearance & Theme')).toBeInTheDocument();
-    });
+    }, { timeout: 4000 });
   });
+
+
 
   it('switches languages smoothly without crashing', async () => {
     render(<App />);
@@ -99,4 +101,33 @@ describe('Frontend Integration Suite', () => {
     fireEvent.click(themeToggleBtn);
     expect(themeToggleBtn).toBeInTheDocument();
   });
+
+  it('renders WCAG 2.4.1 Skip to Content link pointing to #main-content', () => {
+    render(<App />);
+
+    const skipLink = screen.getByRole('link', { name: /skip to main content/i });
+    expect(skipLink).toBeInTheDocument();
+    expect(skipLink).toHaveAttribute('href', '#main-content');
+  });
+
+  it('provides an aria-live region for dynamic screen reader status announcements', () => {
+    render(<App />);
+
+    const announcer = document.getElementById('a11y-announcer');
+    expect(announcer).toBeInTheDocument();
+    expect(announcer).toHaveAttribute('aria-live', 'polite');
+    expect(announcer).toHaveAttribute('role', 'status');
+  });
+
+  it('establishes proper W3C ARIA tablist and tabpanel relationships', () => {
+    render(<App />);
+
+    const tablist = screen.getByRole('tablist', { name: /campus navigation sections/i });
+    expect(tablist).toBeInTheDocument();
+
+    const mainPanel = screen.getByRole('tabpanel');
+    expect(mainPanel).toBeInTheDocument();
+    expect(mainPanel).toHaveAttribute('id', 'main-content');
+  });
 });
+

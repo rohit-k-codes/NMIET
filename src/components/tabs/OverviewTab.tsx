@@ -229,7 +229,7 @@ export const OverviewTab: React.FC = () => {
                     fontSize: '12px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   }}
-                  formatter={(val: any) => [`${formatNum(Number(val))} kWh`, 'Campus Load']}
+                  formatter={(val: number | string | Array<number | string>) => [`${formatNum(Number(val))} kWh`, 'Campus Load']}
                 />
                 <Area
                   type="monotone"
@@ -241,6 +241,29 @@ export const OverviewTab: React.FC = () => {
                 />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Accessible Table for Screen Readers */}
+          <div className="sr-only">
+            <h4>{t('chart_accessible_summary_title')} - {t('chart_campus_timeline')}</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Time</th>
+                  <th scope="col">Load (kWh)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chartData.slice(0, 12).map((item: { timestamp: string; total?: number }, idx: number) => (
+                  <tr key={idx}>
+                    <td>{item.timestamp}</td>
+                    <td>{item.total ?? 0} kWh</td>
+                  </tr>
+                ))}
+              </tbody>
+
+
+            </table>
           </div>
         </div>
 
@@ -312,7 +335,7 @@ export const OverviewTab: React.FC = () => {
                   color: tooltipColor,
                   fontSize: '12px',
                 }}
-                formatter={(val: any) => [`${formatNum(Number(val))} kWh`]}
+                formatter={(val: number | string | Array<number | string>) => [`${formatNum(Number(val))} kWh`]}
               />
               <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
               <Bar dataKey="totalKwh" name={t('chart_legend_total')} fill="#10b981" radius={[4, 4, 0, 0]} />
@@ -321,7 +344,33 @@ export const OverviewTab: React.FC = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Accessible Table for Screen Readers */}
+        <div className="sr-only">
+          <h4>{t('chart_accessible_summary_title')} - {t('chart_facility_breakdown')}</h4>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Facility</th>
+                <th scope="col">Total Consumption (kWh)</th>
+                <th scope="col">Off-Hours (kWh)</th>
+                <th scope="col">Avoidable Waste (kWh)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {zoneBarData.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.name}</td>
+                  <td>{item.totalKwh} kWh</td>
+                  <td>{item.offHoursKwh} kWh</td>
+                  <td>{item.wasteKwh} kWh</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 };
+

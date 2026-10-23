@@ -141,9 +141,10 @@ describe('Backend Express API Suite', () => {
     expect(res.body.data.actions.length).toBeGreaterThan(0);
     expect(Array.isArray(res.body.data.executionLogs)).toBe(true);
     // Verifies that inspect_energy_data and draft_maintenance_task tools were recorded in executionLogs
-    expect(res.body.data.executionLogs.some((l: any) => l.toolName === 'inspect_energy_data')).toBe(true);
-    expect(res.body.data.executionLogs.some((l: any) => l.toolName === 'draft_maintenance_task')).toBe(true);
+    expect(res.body.data.executionLogs.some((l: { toolName?: string }) => l.toolName === 'inspect_energy_data')).toBe(true);
+    expect(res.body.data.executionLogs.some((l: { toolName?: string }) => l.toolName === 'draft_maintenance_task')).toBe(true);
   });
+
 
   it('POST /api/agent/optimize accepts and processes locale preference parameter', async () => {
     const readings = generateDemoCampusReadings();
