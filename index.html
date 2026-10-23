@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><path d='M13 2L3 14h9l-1 8 10-12h-9l1-8z'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WattWise AI — Autonomous Campus Energy Optimization</title>
+    <meta name="description" content="Detect Waste. Decide Smartly. Save Energy. An Autonomous Energy Optimization Platform for University Facilities & Administrators." />
+    <!-- Theme Flash Prevention Script -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('wattwise_theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'dark' || (!saved && prefersDark) || (saved === 'system' && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else if (saved === 'light' || (saved === 'system' && !prefersDark)) {
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="selection:bg-emerald-500 selection:text-white min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
