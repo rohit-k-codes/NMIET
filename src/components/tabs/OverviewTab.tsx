@@ -187,7 +187,7 @@ export const OverviewTab: React.FC = () => {
             {savingsResult ? formatMoney(savingsResult.costSavingsCurrency) : '$0'}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>{savingsResult ? formatMoney(savingsResult.annualCostSavings, 0) : '$0'}/yr</span>
+            <span>{savingsResult ? formatMoney(savingsResult.annualCostSavingsCurrency, 0) : '$0'}/yr</span>
             <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold uppercase">Scenario Est.</span>
           </div>
         </div>
