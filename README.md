@@ -1,6 +1,6 @@
 # ⚡ WattWise AI — Autonomous Campus Energy Optimization Agent
 
-APP LIVE LINK : nmiet.vercel.app
+#APP LIVE LINK : nmiet.vercel.app
 
 > **National Hackathon Project**  
 > *Tagline: Detect Waste. Decide Smartly. Save Energy.*
